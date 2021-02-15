@@ -28,6 +28,10 @@ const int ledPin = 2;
 
 bool passwordincorrecta = false;
 
+//Bool para verificar que entra o sale de la casa.
+bool puertaEntrada = true;
+bool puertaSalida = false;
+
 
 //PASSWORD
 const String PASS = "202112";
@@ -47,8 +51,13 @@ Keypad teclado = Keypad( makeKeymap(keys), rowPins, colPins, rows, cols );
 
 LiquidCrystal lcd(rs, enable, d4, d3, d2, d1);
 
-Servo servo;
+//Declaración de motores
+Servo servoMotor;
+Servo servoMotor2;
 
+
+
+//SENSOR---------------------------------------
 int cm = 0;
 
 long distancia(int trigger, int echo) {
@@ -62,6 +71,8 @@ long distancia(int trigger, int echo) {
   pinMode(echo, INPUT);
   return pulseIn(echo, HIGH);
 }
+//SENSOR---------------------------------------
+
 
 //const int butPinUp = 3;
 //int butUpState = 0;
@@ -74,7 +85,9 @@ void setup() {
   //lcd.print("Lab Arqui");
   pinMode(ledPin, OUTPUT);
 
-  servo.attach(A0);
+  //Inicialización del servoMotor en el pin A0
+  servoMotor.attach(A0);
+  servoMotor2.attach(A8);
 
   pinMode(A1, INPUT);//javier
   pinMode(A2, INPUT); //javier
@@ -90,89 +103,25 @@ char * txt2 = "ACE1-A-G12-S1";//javier
 //int iCursor = 0;//javier
 //int linea = 1;//javier
 //--------------------------------------------------------Javier
-/*
-  void actualizador() {
-  int leng1 = strlen(txt);//calcula longitud del 1er string
-  if (iCursor == leng1 - 1) {
-    iCursor = 0;
-  }
-  lcd.setCursor(0, linea);
-  if (iCursor < leng1 - 16) {
 
-    for (int iChar = iCursor; iChar < iCursor + 16; iChar++) {
-      lcd.print(txt[iChar]);
-    }
-
-  } else {
-    for (int iChar = iCursor; iChar < (leng1 - 1); iChar++) {
-      lcd.print(txt[iChar]);
-    }
-    for (int iCgar = 0; iCgar <= 16 - (leng1 - iCursor); iCgar++) {
-      lcd.print(txt[iCgar]);
-    }
-
-
-  }
-  iCursor++;
-  Serial.println(iCursor);
-
-  if (iCursor == 22) {
-    Serial.println("XD");
-  }
-  //lcd.print(txt);
-  //delay(2000);
-  //lcd.print(txt2);
-
-
-  }*/
 
 bool modoDeteccion = false;//javier
 
 void loop() {
 
-  //actualizador();
-  //delay(300);
   //--------------------------------------------------------Javier----------------------------------------------------------------
 
-  //estado();
   
   if (modoDeteccion == false) {   //modo inicial
     intro();
 
-    //AUX
-  
-    //delay(500);
-    cm = 0.01723 * distancia(6, 6);
+    //Calculo de distancia en cm
+    calcularDistancia(1);
+  Serial.print("Distancia de puerta de entrada ");
+  Serial.print("cm: ");
+  Serial.println(cm);
     if(cm<=150){
       inputPass();
-    /*lcd.setCursor(0,0);
-    lcd.print("Contrasenia:");
-    char c = '\0';
-    String contra_pad= "";
-    int i=0;
-    while(true){
-      c=pad.getKey();
-      if(c=='*') break;
-      if(c!=NO_KEY){
-        contra_pad+=c;
-        lcd.setCursor(i,1);
-        lcd.print(c);
-        i++;
-      }
-    }
-    lcd.clear();
-    if(contra_pad=="202112"){
-      lcd.print("Correcto");
-      delay(500);
-      servo.write(180);
-      delay(3000);
-      servo.write(90);
-      modoDeteccion = !false;
-    }else{
-      lcd.print("Incorrecto");
-    }
-    
-    delay(1000);*/
     }
 
   }
@@ -180,84 +129,10 @@ void loop() {
 
     verificarEstadoHabitacion();
 
-    //Serial.println(porcentaje);
-    //delay(500);
-
-    //pasamos al modo teclado
     //NOS TOCARIA MOSTRAR:::: INGRESE SU CONTRASEÑA
-    /*
-        if(confirmacion==true){//si metio algo por el teclado
-
-        if(contrasenya correcta==true){
-        //entramos aqui con casa
-        //NOS TOCARIA MOSTRAR:::: BIENVENIDO A CASA ^_^
-
-        //Control de la iluminación();//AQUI VENDRIA EL MODO VERIFICARESTADOHABITACION();
-
-        }else{//modo alarma
-        //NOS TOCARIA MOSTRAR::::  ERROR EN CONTRASEÑA
-        if(contador==3){
-        //modo bloqueado
-            //NOS TOCARIA MOSTRAR::::   “Acceso No Autorizado”
-            contador=0
-        }
-        contador++
-        }
-        }
-    */
 
   }
 
-  //--------------------------------------------------------Javier----------------------------------------------------------------
-
-  //:::::::::::::::::::::::::AUX:::::::::::::::::::::::::::::::::::::
-  /*lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print("Lab Arqui");
-    char c = '\0';
-    String contra_pad= "";
-    int i=0;
-    while(true){
-    c=pad.getKey();
-    if(c=='*') break;
-    if(c!=NO_KEY){
-      contra_pad+=c;
-      lcd.setCursor(i,1);
-      lcd.print(c);
-      i++;
-    }
-    }
-
-    lcd.clear();
-    if(contra_pad=="456"){
-    lcd.print("Correcto");
-    }else{
-    lcd.print("Incorrecto");
-    }
-
-    delay(3000);*/
-
-  /*
-    cm = 0.01723 * distancia(6, 6);
-    Serial.println(cm);
-    delay(500);*/
-
-  /*
-    servo.write(180);
-    delay(1000);
-    servo.write(90);
-    delay(1000);
-  */
-
-  /*
-    int val = analogRead(A1);
-    int por = map(val, 10, 975, 0, 100);
-    Serial.println(por);
-    delay(500);*/
-
-    
-  
-  //:::::::::::::::::::::::::AUX:::::::::::::::::::::::::::::::::::::
 }
 //--------------------------------------------------------Javier----------------------------------------------------------------
 void intro() {
@@ -290,19 +165,16 @@ void verificarEstadoHabitacion () {
   habitacion2();
   habitacion3();
   habitacion4();
-
+  //Calcular distnancia del a puerta de salida
+  calcularDistancia(2);
+  Serial.print("Distancia de puerta de salida ");
+  Serial.print("cm: ");
+  Serial.println(cm);
+  if (cm<=150){
+    moverMotor();
+  } 
 }
 
-/*void estado() {
-
- butUpState = digitalRead(butPinUp);
- 
-  if (butUpState == HIGH ) {
-    modoDeteccion = !false;
-  } else {
-    modoDeteccion = false;
-  }
-}*/
 
 void habitacion1() {
   lcd.setCursor(0, 0);//defino la posicion en el LCD
@@ -425,10 +297,8 @@ void inputPass() {
   if (pass_pad == PASS) {
     lcd.print("BIENVENIDO A CASA ^_^");
     //****AQUI SE PUEDE INSTANCIAR EL METODO PARA GIRAR MOTORO**///////////////
-    delay(500);
-    servo.write(180);
-    delay(3000);
-    servo.write(90);
+    delay(75);
+    moverMotor();
     lcd.clear();
     modoDeteccion = !false;
     passwordincorrecta = false;
@@ -470,4 +340,31 @@ void AlarmaLed() {
     contadorSegundos--;
   }
   ContadorPass = 20;
+}
+
+void moverMotor(){
+  if (puertaEntrada){
+    servoMotor.write(-90);
+    delay(3000);
+    servoMotor.write(90);    
+    puertaEntrada = false;
+    puertaSalida = true;
+  }else if (puertaSalida){
+    servoMotor2.write(-90);
+    delay(3000);
+    servoMotor2.write(90);
+    puertaSalida = false;
+    puertaEntrada = true;
+    //Reiniciar todo
+    modoDeteccion = false;
+  }
+}
+
+void calcularDistancia(int numero){
+  if (numero ==1 && puertaEntrada){
+    cm = 0.01723 * distancia(6, 6);
+  }else if (numero==2 && puertaSalida){
+    cm = 0.01723 * distancia(5, 5);
+  }
+  
 }
