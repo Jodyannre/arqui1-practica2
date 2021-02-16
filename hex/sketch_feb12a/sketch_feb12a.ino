@@ -111,16 +111,18 @@ void loop() {
 
   //--------------------------------------------------------Javier----------------------------------------------------------------
 
-  
+
   if (modoDeteccion == false) {   //modo inicial
+    calcularDistancia(1);
+    Serial.print("Distancia de puerta de entrada ");
+    Serial.print("cm: ");
+    Serial.println(cm);
     intro();
 
     //Calculo de distancia en cm
-    calcularDistancia(1);
-  Serial.print("Distancia de puerta de entrada ");
-  Serial.print("cm: ");
-  Serial.println(cm);
-    if(cm<=150){
+
+
+    if (cm <= 150) {
       inputPass();
     }
 
@@ -136,8 +138,10 @@ void loop() {
 }
 //--------------------------------------------------------Javier----------------------------------------------------------------
 void intro() {
+  lcd.clear();
 
-  if(passwordincorrecta == false){ //validaciion para que no se inicie la intro cada vez que que se ingrese una contraseña incorrecta
+  if (passwordincorrecta == false || cm > 150) { //validaciion para que no se inicie la intro cada vez que que se ingrese una contraseña incorrecta
+    //Que se inicie si la persona se aleja de la puerta
     //defino la posicion en el LCD
     //         setCursor(col,row)
     lcd.setCursor(0, 0);
@@ -154,9 +158,10 @@ void intro() {
     delay(2000);
     lcd.clear();
     delay(1000);
-    
+  } else {
+
   }
-  
+
 
 }
 
@@ -170,9 +175,9 @@ void verificarEstadoHabitacion () {
   Serial.print("Distancia de puerta de salida ");
   Serial.print("cm: ");
   Serial.println(cm);
-  if (cm<=150){
+  if (cm <= 150) {
     moverMotor();
-  } 
+  }
 }
 
 
@@ -275,9 +280,17 @@ void habitacion4() {
 
 
 void inputPass() {
+  /*lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("INGRESE SU CONTRASENIA");*/
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("INGRESE SU CONTRASENIA");
+  lcd.print("INGRESE SU");
+  lcd.setCursor(0, 1);
+  lcd.print("CONTRASENIA");
+  delay(2000);
+  lcd.clear();
+  lcd.print("CONTRASENIA:");
   char c = '\0';
   String pass_pad = "";
   int contador_ingresopad = 0;
@@ -295,7 +308,9 @@ void inputPass() {
   lcd.clear();
   lcd.setCursor(0, 0);
   if (pass_pad == PASS) {
-    lcd.print("BIENVENIDO A CASA ^_^");
+    lcd.print("BIENVENIDO A");
+    lcd.setCursor(0, 1);
+    lcd.print("CASA ^_^");
     //****AQUI SE PUEDE INSTANCIAR EL METODO PARA GIRAR MOTORO**///////////////
     delay(75);
     moverMotor();
@@ -307,7 +322,9 @@ void inputPass() {
     passwordincorrecta = !false; //para que no se inicie la intro
     ContadorPass++;
     if (ContadorPass < 3) {
-      lcd.print("ERROR EN CONTRASEÑA");
+      lcd.print("ERROR EN");
+      lcd.setCursor(0, 1);
+      lcd.print("CONTRASENIA");
       delay(1000);
     }
     else {
@@ -319,14 +336,16 @@ void inputPass() {
 
 void AlarmaLed() {
   int contadorSegundos = 20;
-  
+
   while (true) {
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("Acceso No Autorizado");
+    lcd.print("Acceso No");
     lcd.setCursor(0, 1);
+    lcd.print("Autorizado");
+    lcd.setCursor(11, 1);
     lcd.print(contadorSegundos);
-    if(contadorSegundos == 0){
+    if (contadorSegundos == 0) {
       break;
     }
     digitalWrite(ledPin, HIGH);
@@ -339,17 +358,17 @@ void AlarmaLed() {
     delay(250);
     contadorSegundos--;
   }
-  ContadorPass = 20;
+  ContadorPass = 0;
 }
 
-void moverMotor(){
-  if (puertaEntrada){
+void moverMotor() {
+  if (puertaEntrada) {
     servoMotor.write(-90);
     delay(3000);
-    servoMotor.write(90);    
+    servoMotor.write(90);
     puertaEntrada = false;
     puertaSalida = true;
-  }else if (puertaSalida){
+  } else if (puertaSalida) {
     servoMotor2.write(-90);
     delay(3000);
     servoMotor2.write(90);
@@ -360,11 +379,11 @@ void moverMotor(){
   }
 }
 
-void calcularDistancia(int numero){
-  if (numero ==1 && puertaEntrada){
+void calcularDistancia(int numero) {
+  if (numero == 1 && puertaEntrada) {
     cm = 0.01723 * distancia(6, 6);
-  }else if (numero==2 && puertaSalida){
+  } else if (numero == 2 && puertaSalida) {
     cm = 0.01723 * distancia(5, 5);
   }
-  
+  delay(30);
 }
